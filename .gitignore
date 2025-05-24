@@ -14,3 +14,6 @@ wheels/
 token.json
 credentials.json
 calendar_settings.json
+
+# Other
+*.bk

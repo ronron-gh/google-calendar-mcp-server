@@ -14,26 +14,11 @@ from googleapiclient.errors import HttpError
 
 mcp = FastMCP("google-calendar-mcp-server")
 
+
 # APIに要求する権限を指定
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
-# === 設定ファイル ===
-
-SETTINGS_FILE = Path(__file__).resolve().parent / "calendar_settings.json"
-
-
-def load_calendar_ids(settings_file):
-    """設定ファイルからカレンダーIDを読み込む"""
-    with open(settings_file, "r", encoding="utf-8") as f:
-        settings = json.load(f)
-    return settings.get("calendar_ids", {})
-
-
-# カレンダータイプとIDのマッピング
-CALENDAR_IDS = load_calendar_ids(SETTINGS_FILE)
-
 # === Google Calendar API ===
-
 
 def authenticate_google_calendar():
     """Google Calendar APIに認証する"""
@@ -93,27 +78,12 @@ def search_events(
     else:
         time_max = None  # 終了日時が指定されていない場合はNone
 
-    # カレンダータイプの処理
-    if calendar_type and calendar_type.lower() in CALENDAR_IDS:
-        # 特定のカレンダーが指定された場合、そのカレンダーのみ検索
-        calendar_id = CALENDAR_IDS[calendar_type.lower()]
-        return search_calendar_events(
-            service, calendar_id, time_min, time_max, location, summary, description
-        )
-    else:
-        # カレンダータイプの指定がない、または "all" の場合、すべてのカレンダーを検索
-        all_events = []
-        for cal_type, cal_id in CALENDAR_IDS.items():
-            if cal_id:  # 設定ファイルに設定されている場合のみ
-                print(f"カレンダー {cal_type} を検索中...")
-                cal_events = search_calendar_events(
-                    service, cal_id, time_min, time_max, location, summary, description
-                )
-                all_events.extend(cal_events)
-        return all_events
+    return search_calendar_events_by_api(
+        service, calendar_type, time_min, time_max, location, summary, description
+    )
 
 
-def search_calendar_events(
+def search_calendar_events_by_api(
     service, calendar_id, time_min, time_max, location, summary, description
 ):
     """特定のカレンダーからイベントを検索"""
@@ -175,57 +145,32 @@ def search_calendar_events(
 
 # === MCPツール ===
 
-
 @mcp.tool()
-def search_all_calendars(
-    ctx: Context,
+def search_calendar_events(
     start_date: str = None,
     end_date: str = None,
     location: str = None,
     title: str = None,
     description: str = None,
 ) -> str:
-    """すべてのカレンダーからイベントを検索するツール"""
-    creds = authenticate_google_calendar()
-    try:
-        service = build("calendar", "v3", credentials=creds)
-        events = search_events(
-            service, start_date, end_date, location, title, "all", description
-        )
-        return json.dumps(events, ensure_ascii=False)
-    except HttpError as error:
-        return json.dumps(
-            {"error": f"エラーが発生しました: {error}"}, ensure_ascii=False
-        )
-
-
-@mcp.tool()
-def search_calendar_events_by_type(
-    ctx: Context,
-    calendar_type: str,
-    start_date: str = None,
-    end_date: str = None,
-    location: str = None,
-    title: str = None,
-    description: str = None,
-) -> str:
-    """特定のカレンダータイプからイベントを検索するツール"""
-    if (
-        calendar_type.lower() not in CALENDAR_IDS
-        or not CALENDAR_IDS[calendar_type.lower()]
-    ):
-        return json.dumps(
-            {"error": f"カレンダーIDが設定されていません: {calendar_type}"},
-            ensure_ascii=False,
-        )
+    """カレンダーのイベントを検索するツール"""
 
     creds = authenticate_google_calendar()
     try:
         service = build("calendar", "v3", credentials=creds)
         events = search_events(
-            service, start_date, end_date, location, title, calendar_type, description
+            service, start_date, end_date, location, title, "primary", description
         )
-        return json.dumps(events, ensure_ascii=False)
+        #return json.dumps(events, ensure_ascii=False)
+        #return events
+        eventsStr = ""
+        for event in events:
+            #print(type(event))
+            #print(event)
+            #print(event["start"], event["summary"])
+            eventsStr += event["start"] + " " + event["summary"] + "\n"
+        return eventsStr
+
     except HttpError as error:
         return json.dumps(
             {"error": f"エラーが発生しました: {error}"}, ensure_ascii=False
@@ -234,4 +179,10 @@ def search_calendar_events_by_type(
 
 if __name__ == "__main__":
     print("[INFO] MCPサーバー起動中...")
-    mcp.run()
+    mcp.run(transport="sse")
+
+'''
+    # Test for Google Calendar API
+    events = search_calendar_events()
+    print(events)
+'''

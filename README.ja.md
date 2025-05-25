@@ -25,7 +25,8 @@ Google Cloud コンソールのメニューまたは、下のリンクからブ�
 
 1. アプリ名を設定します。
 2. ユーザーサポートメールを設定します。
-3. デベロッパーの連絡先情報を設定します。
+3. 利用できるユーザーの対象として「外部」を選択します。
+4. デベロッパーの連絡先情報を設定します。
 
 ### 3. デスクトップ アプリケーションの認証情報を設定
 
@@ -37,9 +38,17 @@ Google Cloud コンソールのメニューまたは、下のリンクからク�
 2. アプリケーション種類 -> デスクトップアプリ をクリックします。
 3. 名前フィールドに、認証情報の名前を入力します。
 4. 作成をクリックします。
-5. ダウンロードした JSON ファイルを `credentials.json` として保存し、ファイルを作業ディレクトリに移動します。
+5. ダウンロードした JSON ファイルを `credentials.json` として保存し、ファイルをプロジェクトのディレクトリに移動します。
 
-### 4. Python 環境のセットアップ
+### 4. テストユーザを作成
+
+Google Cloud コンソールのメニューまたは、下のリンクから対象に移動します。
+
+[対象](https://console.cloud.google.com/auth/audience?hl=ja)
+
+1. **Add User**をクリックしてテストユーザ(自分のアカウント名)を追加します。
+
+### 5. Python 環境のセットアップ
 
 #### 仮想環境の作成
 
@@ -62,83 +71,13 @@ Google Cloud コンソールのメニューまたは、下のリンクからク�
 2. ブラウザが立ち上がり、Googleアカウントへのアクセス許可を求められます。許可を与えてください。
 3. 認証が完了すると、プロジェクトディレクトリに`token.json`ファイルが作成されます。
 
-### 5. calendar_settings.jsonの設定
+#### MCPサーバを起動
 
-1. プロジェクトディレクトリ内の`calendar_settings.json.sample`ファイルを編集します。
+1. 次のコマンドを実行してMCPサーバを起動します：
 
-例えば、以下のように設定します。
-
-```json
-{
-  "calendar_ids": {
-    "primary": "primary",
-    "work": "example_work_schedule_id"
-  }
-}
-```
-
-- `primary`: GoogleアカウントのプライマリカレンダーのID（通常は"primary"）。
-- `work`: 仕事用カレンダーのID。
-
-必要なカレンダーIDを設定し、ファイルを`calendar_settings.json`に**リネーム**して保存してください。
-
-### 6. MCPの設定
-
-1. プロジェクトディレクトリ内の`.vscode`ディレクトリに移動し、`mcp.json.sample`ファイルを編集します。
-2. `mcp.json.sample`ファイルを以下のように編集してください。
-
-   ```json
-   {
-     "servers": {
-       "google-calendar-mcp-server": {
-         "type": "stdio",
-         "command": "/home/<username>/<dir>/.venv/bin/python",
-         "args": [
-           "/home/<username>/<dir>/google_calendar_mcp_server.py"
-         ]
-       }
-     }
-   }
+   ```sh
+   uv run main.py
    ```
-
-   - `<username>`の部分をあなたのユーザー名に置き換えてください。
-   - `<dir>`の部分をプロジェクトのディレクトリ名に置き換えてください。
-
-   例えば、ユーザー名が`tatsuya`、プロジェクトのディレクトリ名が`google-calendar-mcp-server`の場合、以下のようになります。
-
-   ```json
-   {
-     "servers": {
-       "google-calendar-mcp-server": {
-         "type": "stdio",
-         "command": "/home/tatsuya/google-calendar-mcp-server/.venv/bin/python",
-         "args": [
-           "/home/tatsuya/google-calendar-mcp-server/main.py"
-         ]
-       }
-     }
-   }
-   ```
-
-3. 編集が完了したら、ファイルを`mcp.json`に**リネーム**して保存してください。
-
-### 7. Agentモードの設定
-
-Visual Studio CodeのGitHub Copilot ChatのAgentモードを設定する手順を以下に示します。
-
-1. Visual Studio Codeを起動し、拡張機能のインストール画面を開きます。
-2. 「GitHub Copilot Chat」拡張機能を検索してインストールします。
-3. インストールが完了したら、左側のサイドバーに「Copilot Chat」アイコンが表示されます。それをクリックしてCopilot Chatパネルを開きます。
-4. Copilot Chatパネルの上部にある「歯車」アイコンをクリックして設定画面を開きます。
-5. 設定画面で「Agent Mode」を有効にします。
-
-### 8. MCPの利用
-
-1. Copilot Chatパネルを開きます。
-2. 例えば、「4月8日の予定をリストアップしてほしいです。」といったチャットを行います。
-3. ツールの実行確認が表示されるので、**Continue**ボタンをクリックして実行します。
-4. 初回利用時は、ブラウザが立ち上がり、Googleアカウントへのアクセス許可を求められます。許可を与えてください。
-5. 結果が表示されます。
 
 ### トラブルシューティング
 

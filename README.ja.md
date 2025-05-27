@@ -2,6 +2,8 @@
 
 [English README is here](README.md)
 
+> このブランチ(change_to_sse)は、[こちらのリポジトリ](https://github.com/101ta28/google-calendar-mcp-server)「GoogleカレンダーMCPサーバ」をフォークさせていただき、トランスポート仕様をStdioからSSEに変更＆機能の簡略化のカスタマイズをしたものです。
+
 このドキュメントでは、Google Calendar APIを使用してカレンダーの内容を検索するMCPサーバーを構築するための手順を説明します。
 
 ## 前提条件
